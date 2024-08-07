@@ -929,3 +929,23 @@ vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
     vim.diagnostic.open_float(nil, { focus = false })
   end,
 })
+
+function copy_diagnostics()
+  local diagnostics = vim.diagnostic.get(0, { lnum = vim.fn.line '.' - 1 })
+  if #diagnostics == 0 then
+    print 'No diagnostics found at current line'
+    return
+  end
+
+  local messages = {}
+  for _, diagnostic in ipairs(diagnostics) do
+    table.insert(messages, diagnostic.message)
+  end
+
+  local joined_messages = table.concat(messages, '\n')
+  vim.fn.setreg('+', joined_messages)
+  print('Copied ' .. #diagnostics .. ' diagnostic message(s) to clipboard')
+end
+
+-- Key mapping
+vim.api.nvim_set_keymap('n', '<Space>cd', ':lua copy_diagnostics()<CR>', { noremap = true, silent = true })
